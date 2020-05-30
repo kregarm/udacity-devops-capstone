@@ -1,0 +1,23 @@
+{
+  "name": "udacity-devops-capstone",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kregarm/udacity-devops-capstone.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kregarm/udacity-devops-capstone/issues"
+  },
+  "homepage": "https://github.com/kregarm/udacity-devops-capstone#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1"
+  }
+}
