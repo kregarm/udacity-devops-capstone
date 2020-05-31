@@ -3,7 +3,7 @@ pipeline {
      stages {
          stage('Install requirements') {
              steps {
-                 sh 'npm install"'
+                 sh 'npm install'
              }
          }
          stage('Lint JS') {
