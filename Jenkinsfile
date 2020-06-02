@@ -8,10 +8,13 @@ pipeline {
          }
          stage('Lint JS') {
               steps {
-                  sh
-                  'npm run lint'
-                  checkstyle('lint_result.xml')
+                  sh 'npm run lint'
               }
+         }
+         stage('Read lint results') {
+             steps {
+                 checkstyle('lint_result.xml')
+             }
          }
      }
 }
