@@ -13,7 +13,7 @@ pipeline {
          }
          stage('Read lint results') {
              steps {
-                  checkstyle canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '**/lint_result.xml', unHealthy: ''
+                  checkstyle canComputeNew: false, defaultEncoding: '', healthy: '0', pattern: '**/lint_result.xml', unHealthy: ''
              }
          }
      }
