@@ -1,0 +1,287 @@
+{
+    "Parameters": {
+        "EnvironmentName": {
+            "Description": "An Environment name that will be prefixed to resources",
+            "Type": "String"
+        },
+        "VpcCIDR": {
+            "Description": "Please enter the IP range (CIDR notation) for this",
+            "Type": "String",
+            "Default": "10.0.0.0/16"
+        },
+        "PublicSubnet1CIDR": {
+            "Description": "Please enter the IP range (CIDR notation) for this",
+            "Type": "String",
+            "Default": "10.0.0.0/24"
+        },
+        "PublicSubnet2CIDR": {
+            "Description": "Please enter the IP range (CIDR notation) for this",
+            "Type": "String",
+            "Default": "10.0.1.0/24"
+        }
+    },
+    "Resources": {
+        "VPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": { "Ref": "VpcCIDR" },
+                "EnableDnsHostnames": true,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {"Fn::Sub": ["${envname} VPC",{"envname": {"Ref": "EnvironmentName"}}]}
+                    }
+                ]
+            }
+        },
+        "InternetGateway": {
+            "Type": "AWS::EC2::InternetGateway",
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {"Fn::Sub": ["${envname} Internet Gateway",{"envname": {"Ref": "EnvironmentName"}}]}
+                    }
+                ]
+            }
+        },
+        "InternetGatewayAttachment": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "InternetGatewayId": { "Ref": "InternetGateway" },
+                "VpcId": { "Ref": "VPC" }
+            }
+        },
+        "PublicSubnet1": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": { "Ref": "VPC" },
+                "AvailabilityZone": { "Fn::Select" : ["0", { "Fn::GetAZs" : "" }] },
+                "CidrBlock": { "Ref": "PublicSubnet1CIDR" },
+                "MapPublicIpOnLaunch": true,
+                "Tags": [
+                    { 
+                        "Key": "Name",
+                        "Value": {"Fn::Sub": ["${envname} Public Subnet 1",{"envname": {"Ref": "EnvironmentName"}}]}
+                    }
+                ]
+
+            }
+        },
+        "PublicSubnet2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": { "Ref": "VPC" },
+                "AvailabilityZone": { "Fn::Select" : ["1", { "Fn::GetAZs" : "" }] },
+                "CidrBlock": { "Ref": "PublicSubnet2CIDR" },
+                "MapPublicIpOnLaunch": true,
+                "Tags": [
+                    { 
+                        "Key": "Name",
+                        "Value": {"Fn::Sub": ["${envname} Public Subnet 2",{"envname": {"Ref": "EnvironmentName"}}]}
+                    }
+                ]
+            }
+        },
+        "NatGateway1EIP": {
+            "Type": "AWS::EC2::EIP",
+            "DependsOn": "InternetGatewayAttachment",
+            "Properties": { "Domain": "vpc" }
+        },
+        "NatGateway2EIP": {
+            "Type": "AWS::EC2::EIP",
+            "DependsOn": "InternetGatewayAttachment",
+            "Properties": { "Domain": "vpc" }
+        },
+        "NatGateway1":{
+            "Type": "AWS::EC2::NatGateway",
+            "Properties": {
+                "AllocationId": { "Fn::GetAtt" : [ "NatGateway1EIP" , "AllocationId" ]},
+                "SubnetId": { "Ref": "PublicSubnet1" }
+            }
+        },
+        "NatGateway2":{
+            "Type": "AWS::EC2::NatGateway",
+            "Properties": {
+                "AllocationId": { "Fn::GetAtt" : [ "NatGateway2EIP" , "AllocationId" ]}, 
+                "SubnetId": { "Ref": "PublicSubnet1" }
+            }
+        },
+        "PublicRouteTable": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": { "Ref": "VPC" },
+                "Tags":[{
+                    "Key": "Name",
+                    "Value": { "Ref": "EnvironmentName" }
+                }]
+            }
+        },
+        "DefaultPublicRoute": {
+            "Type":"AWS::EC2::Route",
+            "DependsOn": "InternetGatewayAttachment",
+            "Properties": {
+                "RouteTableId": { "Ref": "PublicRouteTable" },
+                "DestinationCidrBlock": "0.0.0.0/0",
+                "GatewayId": { "Ref": "InternetGateway" }
+            }
+        },
+        "PublicSubnet1RouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": { "Ref": "PublicRouteTable" },
+                "SubnetId": { "Ref": "PublicSubnet1" }
+            }
+        },
+        "PublicSubnet2RouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": { "Ref": "PublicRouteTable" },
+                "SubnetId": { "Ref": "PublicSubnet2" }
+            }
+        },
+        "Role": {
+            "Type": "AWS::IAM::InstanceProfile",
+            "Properties": {
+                "Roles": [
+                    "eksrole"
+                ]
+            }
+        },
+        "LBSecGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Allow http to our load balancer",
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "SecurityGroupIngress": {
+                    "IpProtocol": "tcp",
+                    "FromPort": "80",
+                    "ToPort": "80",
+                    "CidrIp": "0.0.0.0/0"
+                },
+                "SecurityGroupEgress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "80",
+                        "ToPort": "80",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ]
+            }
+        },
+        "Cluster": {
+            "Type": "AWS::EKS::Cluster",
+            "Properties": {
+                "ResourcesVpcConfig": { 
+                    "SecurityGroupIds": [{ "Ref": "LBSecGroup" }],
+                    "SubnetIds": [
+                        { "Ref": "PublicSubnet1" },
+                        { "Ref": "PublicSubnet2" }
+                    ]
+                },
+                "RoleArn": "//"
+            }
+        },
+        "Node": {
+            "Type": "AWS::EKS::Nodegroup",
+            "Properties": {
+                "NodeRole": { "Ref": "Role" },
+                "ScalingConfig": {
+                    "MinSize": 1,
+                    "DesiredSize": 1,
+                    "MaxSize": 1
+                },
+                "ClusterName": "Capstone",
+                "Subnets": [
+                    { "Ref": "PublicSubnet1" },
+                    { "Ref": "PublicSubnet2" }
+                    
+                ]
+            }
+        },
+        "WebAppLaunchConfig": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Properties": {
+                "IamInstanceProfile": {
+                    "Ref": "Role"
+                },
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "\n",
+                            [
+                                "#!/bin/bash",
+                                "apt-get update -y",
+                                "apt-get install unzip awscli -y",
+                                "sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common",
+                                "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -",
+                                "sudo add-apt-repository \"deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" ",
+                                "sudo apt-get update",
+                                "sudo apt-get install -y docker-ce",
+                                "sudo usermod -aG docker ubuntu",
+                                "curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.16.8/2020-04-16/bin/linux/amd64/kubectl",
+                                "chmod +x ./kubectl",
+                                "mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin",
+                                "echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc"
+                            ]
+                        ]
+                    }
+                },
+                "ImageId": "ami-074a2642e2a3737d2",
+                "SecurityGroups": [
+                    {
+                        "Ref": "LBSecGroup"
+                    }
+                ],
+                "InstanceType": "t2.micro",
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": "/dev/sdk",
+                        "Ebs": {
+                            "VolumeSize": "10"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs":{
+        "VPC": {
+            "Description": "A reference to the created VPC",
+            "Value": { "Ref": "VPC" },
+            "Export": {
+                "Name": {"Fn::Sub": ["${envname}-VPC-ID",{"envname": {"Ref": "EnvironmentName"}}]}
+            }
+        },
+        "VPCPublicRouteTable":{
+            "Description": "Public routing",
+            "Value": { "Ref": "PublicRouteTable" },
+            "Export": {
+                "Name": {"Fn::Sub": ["${envname}-PUB-RT",{"envname": {"Ref": "EnvironmentName"}}]}
+            }
+        },
+        "PublicSubnets":{
+            "Description": "A list of the public subnets",
+            "Value": { "Fn::Join": [",", [{"Ref" : "PublicSubnet1"},{"Ref" : "PublicSubnet2"}]]},
+            "Export": {
+                "Name": {"Fn::Sub": ["${EnvironmentName}-PUB-NETS",{"EnvironmentName": {"Ref": "EnvironmentName"}}]}
+            }
+        },
+        "PublicSubnet1":{
+            "Description": "A reference to the public subnet in the 1st Availability Zone",
+            "Value": { "Ref": "PublicSubnet1" },
+            "Export": {
+                "Name": {"Fn::Sub": ["${EnvironmentName}-PUB1-SN",{"EnvironmentName": {"Ref": "EnvironmentName"}}]}
+            }
+        },
+        "PublicSubnet2":{
+            "Description": "A reference to the public subnet in the 2nd Availability Zone",
+            "Value": { "Ref": "PublicSubnet2" },
+            "Export": {
+                "Name": {"Fn::Sub": ["${EnvironmentName}-PUB2-SN",{"EnvironmentName": {"Ref": "EnvironmentName"}}]}
+            }
+        }
+    }
+}
