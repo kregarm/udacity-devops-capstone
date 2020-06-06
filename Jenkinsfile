@@ -1,4 +1,9 @@
 pipeline {
+    environment {
+        registry= 'martinkregar/udacity-capstone'
+        registryCredential = 'dockerhub'
+        dockerimage = ''
+    }
      agent any
      stages {
          stage('Install requirements') {
@@ -10,6 +15,25 @@ pipeline {
               steps {
                   sh 'npm run lint'
                   checkstyle canComputeNew: false, defaultEncoding: 'utf-8', healthy: '100', pattern: '**/lint_result.xml', unHealthy: '1'
+              }
+         }
+         stage('Build docker image') {
+              steps {
+                  script {
+                      dockerImage = docker.build registry + ":$BUILD_NUMBER"
+                  }
+              }
+         }
+         stage('Push image to repository') {
+              steps {
+                  script {
+                      docker.withRegistry( '', registryCredential ) { dockerImage.push() }
+                  }
+              }
+         }
+         stage('Remove local docker image') {
+              steps {
+                  sh 'docker rmi $registry:$BUILD_NUMBER'
               }
          }
      }
