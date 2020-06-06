@@ -20,7 +20,7 @@ pipeline {
          stage('Build docker image') {
               steps {
                   script {
-                      dockerImage = docker.build registry + ":$BUILD_NUMBER"
+                      dockerImage = docker.build registry + ":$GIT_COMMIT"
                   }
               }
          }
@@ -33,7 +33,7 @@ pipeline {
          }
          stage('Remove local docker image') {
               steps {
-                  sh 'docker rmi $registry:$BUILD_NUMBER'
+                  sh 'docker rmi $registry:$GIT_COMMIT'
               }
          }
      }
