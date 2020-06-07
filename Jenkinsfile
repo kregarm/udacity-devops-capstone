@@ -41,7 +41,7 @@ pipeline {
                  branch 'master'
              }
              steps {
-                 sh 'aws eks --region us-central-1 update-kubeconfig --name UdacityCapstoneCluster'
+                 sh 'aws eks --region eu-central-1 update-kubeconfig --name UdacityCapstoneCluster'
              }
          }
      }
