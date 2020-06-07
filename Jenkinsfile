@@ -33,7 +33,7 @@ pipeline {
          }
          stage('Remove local docker image') {
               steps {
-                  sh 'docker rmi $registry:$GIT_COMMIT'
+                  sh 'echo "docker rmi $registry:$GIT_COMMIT"'
               }
          }
          stage('Deploy Cluster') {
