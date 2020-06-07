@@ -36,5 +36,15 @@ pipeline {
                   sh 'docker rmi $registry:$GIT_COMMIT'
               }
          }
+         stage('Deploy Cluster') {
+             when {
+                 branch 'master'
+             }
+             stage('EKS Cluster connection') {
+                 steps {
+                     sh 'aws eks --region us-central-1 update-kubeconfig --name UdacityCapstoneCluster'
+                 }
+             }
+         }
      }
 }
