@@ -42,7 +42,7 @@ pipeline {
              }
              steps {
                  sh 'aws eks --region eu-central-1 update-kubeconfig --name UdacityCapstoneCluster'
-                 sh 'kubectl run capstone --image=' + "$registry" + ":$GIT_COMMIT" + '--port=3000'
+                 sh 'kubectl run capstone --image=martinkregar/udacity-capstone:9e03dfea33acd7b0a668d7199be536dc36ce37c3 --port=3000'
              }
          }
      }
