@@ -42,7 +42,7 @@ pipeline {
              }
              steps {
                  sh 'aws eks --region eu-central-1 update-kubeconfig --name UdacityCapstoneCluster'
-                 sh "kubectl patch pod cptest2 -p '{\"spec\":{\"containers\":[{\"name\":\"nodehello\",\"image\":\"$registry:$GIT_COMMIT\"}]}}'"
+                 sh "kubectl patch pod test -p '{\"spec\":{\"containers\":[{\"name\":\"nodehello\",\"image\":\"$registry:$GIT_COMMIT\"}]}}'"
              }
          }
      }
