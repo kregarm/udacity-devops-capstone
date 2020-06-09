@@ -14,7 +14,7 @@ pipeline {
          stage('Lint JS') {
               steps {
                   sh 'npm run lint'
-                  checkstyle pattern: 'lint_result.xml'
+                  checkstyle
               }
          }
          stage('Build docker image') {
