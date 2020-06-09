@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: udacity-capstone
+  labels:
+    app: udacity-capstone
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: udacity-capstone
+  template:
+    metadata:
+      labels:
+        app: udacity-capstone
+    spec:
+      containers:
+      - name: nodehello
+        image: $registry:$GIT_COMMIT
+        ports:
+        - containerPort: 8080
