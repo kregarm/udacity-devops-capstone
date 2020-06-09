@@ -25,12 +25,6 @@ pipeline {
                   }
               }
          }
-         stage ('Image scan') {
-             steps {
-			    sh "echo 'Checking Security with Aqua MicroScanner'"
-			    aquaMicroscanner(imageName: "$registry:$GIT_COMMIT", notCompliesCmd: "exit 1", onDisallowed: "fail", outputFormat: "html")
-		}
-         }
          stage('Push image to repository') {
               steps {
                   script {
