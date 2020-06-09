@@ -14,7 +14,7 @@ pipeline {
          stage('Lint JS') {
               steps {
                   sh 'npm run lint'
-                  checkstyle
+                  recordIssues(tools: [checkStyle(reportEncoding: 'UTF-8')])
               }
          }
          stage('Build docker image') {
