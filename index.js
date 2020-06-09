@@ -6,7 +6,7 @@ app.get("/", (req, res) => {
     console.log("Incoming request");
     res.send("Hello world from simple Node server test");
 });
-
+asdfasdf
 app.listen(8080, () => {
     console.log("running with a new image");
 });
