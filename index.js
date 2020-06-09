@@ -4,7 +4,7 @@ let app = express();
 
 app.get("/", (req, res) => {
     console.log("Incoming request");
-    res.send("Hello world from simple Node server test");
+    res.send("After deploy");
 });
 
 app.listen(8080, () => {
