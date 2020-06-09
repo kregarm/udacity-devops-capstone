@@ -11,7 +11,7 @@ pipeline {
                  sh 'npm install'
              }
          }
-         stage('Lint Repo') {
+         stage('Lint Repository') {
               steps {
                   sh 'npm run lint'
                   recordIssues (tools: [checkStyle(reportEncoding: 'UTF-8', healthy: 1, qualityGates: [[threshold: 1, type: 'TOTAL_NORMAL', unstable: true], [threshold: 1, type: 'TOTAL_HIGH', unstable: false], [threshold: 1, type: 'TOTAL_ERROR', unstable: false]])])
