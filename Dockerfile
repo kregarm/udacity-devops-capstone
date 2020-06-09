@@ -2,7 +2,7 @@ FROM node:10
 
 # Create app directory
 WORKDIR /usr/src/app
-
+asdfasfas
 # Copy and Install app dependencies
 COPY package.json .
 COPY package-lock.json .
