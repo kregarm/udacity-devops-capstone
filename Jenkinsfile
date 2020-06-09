@@ -43,6 +43,7 @@ pipeline {
              steps {
                  sh 'aws eks --region eu-central-1 update-kubeconfig --name UdacityCapstoneCluster'
                  sh 'kubectl set image deployment/udacity-capstone nodehello=$registry:$GIT_COMMIT'
+                 sh 'kubectl rollout restart deployment/udacity-capstone'
              }
          }
      }
