@@ -14,7 +14,7 @@ pipeline {
          stage('Lint JS') {
               steps {
                   sh 'npm run lint'
-                  checkstyle canComputeNew: false, defaultEncoding: 'utf-8', healthy: '100', pattern: 'lint_result.xml', unHealthy: '1'
+                  checkstyle canComputeNew: pattern: 'lint_result.xml'
               }
          }
          stage('Build docker image') {
