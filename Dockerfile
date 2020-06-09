@@ -10,9 +10,9 @@ RUN npm install
 
 # Copy index.js
 COPY index.js .
-qwe
+
 # Expose port
-EXPOSE 8080asdasd
-asdasd
+EXPOSE 8080
+
 # Start app
 CMD [ "node", "index.js" ]
