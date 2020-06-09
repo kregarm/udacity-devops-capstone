@@ -11,10 +11,11 @@ pipeline {
                  sh 'npm install'
              }
          }
-         stage('Lint JS') {
+         stage('Lint Repo') {
               steps {
                   sh 'npm run lint'
-                  checkstyle canComputeNew: false, defaultEncoding: 'utf-8', healthy: '100', pattern: '**/lint_result.xml', unHealthy: '1'
+                  recordIssues (tools: [checkStyle(reportEncoding: 'UTF-8', healthy: 1, qualityGates: [[threshold: 1, type: 'TOTAL_NORMAL', unstable: true], [threshold: 1, type: 'TOTAL_HIGH', unstable: false], [threshold: 1, type: 'TOTAL_ERROR', unstable: false]])])
+                  sh 'docker run --rm -i hadolint/hadolint < Dockerfile'
               }
          }
          stage('Build docker image') {
