@@ -11,10 +11,11 @@ pipeline {
                  sh 'npm install'
              }
          }
-         stage('Lint JS') {
+         stage('Lint Repository') {
               steps {
                   sh 'npm run lint'
                   checkstyle canComputeNew: false, defaultEncoding: 'utf-8', healthy: '100', pattern: '**/lint_result.xml', unHealthy: '1'
+                  sh 'docker run --rm -i hadolint/hadolint < Dockerfile'
               }
          }
          stage('Build docker image') {
